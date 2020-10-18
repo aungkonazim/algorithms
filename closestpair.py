@@ -9,17 +9,15 @@ def sort_by_y(P):
     # return P[P[:,1].argsort()]
 
 def closestpair(P):
-
-
     if len(P)==3:
         d = min([get_distance(P[0],P[1]),get_distance(P[2],P[1]),get_distance(P[0],P[2])])
         return P[:2],d
     if len(P)==2:
         return P,get_distance(P[0],P[1])
-    if len(P)==1:
-        return P,10^6
+    # if len(P)==1:
+    #     return P,10^6
 
-    Pleft,dleft = closestpair(P[:((len(P)//2)+1)])
+    Pleft,dleft = closestpair(P[:len(P)//2])
     # print(Pleft,dleft,'internal left')
     Pright,dright = closestpair(P[(len(P)//2):])
     # print(Pright,dright,'internal right')
@@ -28,10 +26,10 @@ def closestpair(P):
     if dleft<dright:
         points = Pleft
     midpoint = P[len(P)//2]
-    Sy = np.array([a for a in P if get_distance(midpoint,a)<=d]).reshape(-1,2)
+    Sy = np.array([a for a in P if abs(midpoint[0]-a[0])<=d])
     Sy = sort_by_y(Sy)
     for i,a in enumerate(Sy):
-        for j in range(i-8,i+8):
+        for j in range(i+1,i+8):
             if 0<=j<len(Sy) and i!=j:
                 b = Sy[j]
                 if get_distance(a,b)<d:
@@ -42,17 +40,17 @@ def closestpair(P):
                     # print(points)
                     # print(d,points,'inside loop')
     return points,d
-
+from copy import deepcopy
 def main(P):
     if len(P)==2:
-        return P,get_distance(P[0],P[1])
-    Px = P[P[:,0].argsort()]
-    Py = P[P[:,1].argsort()]
+        return P,get_distance(P[0,:],P[1,:])
+    Px = deepcopy(P[P[:,0].argsort()])
+    Py = deepcopy(P[P[:,1].argsort()])
     for i,a in enumerate(Py):
         ydict[str(a)] = i
     return closestpair(Px)
 for n in np.arange(4,1000,1):
-    n = 16
+    n = 1600
     ydict = {}
     data = np.unique(np.random.randn(int(n),2),axis=1).reshape(-1,2)
     import time
@@ -64,11 +62,11 @@ for n in np.arange(4,1000,1):
             if i!=j and get_distance(a,b)<d:
                 d = get_distance(a,b)
                 points = np.concatenate([a.reshape(1,2),b.reshape(1,2)])
-    # print(time.time()-start,'brute force',d,n)
+    print(time.time()-start,'brute force',d,n)
     # print(d,points)
     start = time.time()
     points,d1 = main(data)
-    # print(time.time()-start,'closest pair',d1,n)
+    print(time.time()-start,'closest pair',d1,n)
     print(d1-d,d1,d)
     print('-'*40)
 
